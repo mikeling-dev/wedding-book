@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String?
+  createdAt DateTime @default(now()) @map("created_at")
+  roles     UserRole[]
+  couples   Couple[]
+  services  Service[]
+}
+
+model UserRole {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  role      String
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Couple {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  partnerInviteEmail String?  @map("partner_invite_email")
+  preferences      Json?
+  createdAt        DateTime @default(now()) @map("created_at")
+  user             User     @relation(fields: [userId], references: [id])
+  tasks            Task[]
+}
+
+model Service {
+  id        Int      @id @default(autoincrement())
+  providerId Int      @map("provider_id")
+  category  String
+  location  String
+  pricing   Float
+  details   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  provider  User     @relation(fields: [providerId], references: [id])
+}
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  coupleId  Int      @map("couple_id")
+  title     String
+  dueDate   DateTime? @map("due_date")
+  status    String   @default("pending")
+  couple    Couple   @relation(fields: [coupleId], references: [id])
+}
